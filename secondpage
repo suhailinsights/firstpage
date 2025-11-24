@@ -1,0 +1,468 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Menu, X, Search, ArrowRight, 
+  Info, ChevronDown, Layers, ArrowLeft,
+  Scissors, Tag, PenTool, Check, Printer, Zap, Image as ImageIcon, Box,
+  Palette, Ruler, Shield, ShoppingBag, DollarSign, Clock, Package, Settings
+} from 'lucide-react';
+
+// --- SPECIFIC PRODUCT DATA: 3520 DAD CAP ---
+const dadCapData = {
+  id: '3520-dad-cap',
+  title: "3520 Dad Cap",
+  subtitle: "The Classic Standard",
+  desc: "Your classic 'dad cap', soft-structured, low pro, clean, and classic. We make these to order from the ground up, so you can fine tune every aspect of your hat. Ideally suited for lifestyle brands and corporate merch that wants a relaxed, vintage fit. Beyond the standard silhouette, our 3520 features a pre-curved visor and an antique brass buckle closure that elevates the aesthetic from basic to premium. The unstructured six-panel crown hugs the head comfortably, making it an instant favorite for daily wear. Whether you're looking for a distressed wash for that lived-in look or a crisp chino twill for a sharper profile, this cap adapts to your brand's unique voice. With full interior taping customization and side-panel embroidery options, every angle is an opportunity to tell your story.",
+  image: "https://images.unsplash.com/photo-1533827432537-70133748f5c8?q=80&w=1000&auto=format&fit=crop",
+  
+  // Technical Specs
+  specs: [
+    { label: "Crown", value: "Unstructured" },
+    { label: "Profile", value: "Low" },
+    { label: "Panels", value: "6 Panel" },
+    { label: "Bill Type", value: "Curved" },
+    { label: "Fabric", value: "Chino Twill" },
+    { label: "Mesh", value: "No" },
+  ],
+
+  // PRICING PROGRAMS
+  programs: [
+    {
+      name: "Standard Program",
+      desc: "Full custom cut-and-sew headwear, designed from the ground up to your specs.",
+      min: "144 Pcs",
+      sampleTime: "2-4 Weeks",
+      productionTime: "5-7 Weeks",
+      pricing: [
+        { qty: 144, price: "$8.99" },
+        { qty: 288, price: "$8.79" },
+        { qty: 576, price: "$8.49" },
+        { qty: "1008+", price: "Email" },
+      ]
+    },
+    {
+      name: "Premium Program",
+      desc: "Improved materials and finish to rival the premium brand names like Richardson.",
+      min: "144 Pcs",
+      sampleTime: "2-3 Weeks",
+      productionTime: "7-9 Weeks",
+      highlight: true,
+      pricing: [
+        { qty: 144, price: "$11.50" },
+        { qty: 288, price: "$11.00" },
+        { qty: 576, price: "$10.75" },
+        { qty: "1008+", price: "Email" },
+      ]
+    }
+  ],
+
+  // LOGO DECORATION OPTIONS (Specific Textures)
+  decorations: [
+    { name: "Embroidery", price: "Included", image: "https://images.unsplash.com/photo-1617343383619-0263b176030c?q=80&w=500&auto=format&fit=crop" },
+    { name: "Woven Patch", price: "Included", image: "https://images.unsplash.com/photo-1579309473930-38da4a4bc276?q=80&w=500&auto=format&fit=crop" },
+    { name: "Embroidered Patch", price: "Included", image: "https://images.unsplash.com/photo-1516961642265-531546e84af2?q=80&w=500&auto=format&fit=crop" },
+    { name: "Woven Label", price: "Included", image: "https://images.unsplash.com/photo-1589810635657-232948472d98?q=80&w=500&auto=format&fit=crop" },
+    { name: "Sublimated Patch", price: "Included", image: "https://images.unsplash.com/photo-1633327547228-a2c23720a298?q=80&w=500&auto=format&fit=crop" },
+    { name: "Faux Leather", price: "Included", image: "https://images.unsplash.com/photo-1544084944-152696a63f72?q=80&w=500&auto=format&fit=crop" },
+    { name: "Puff Embroidery", price: "$0.25", image: "https://images.unsplash.com/photo-1626002682977-96a29df14d59?q=80&w=500&auto=format&fit=crop" },
+    { name: "Screen Printed", price: "$0.50", image: "https://images.unsplash.com/photo-1503342394128-c104d54dba01?q=80&w=500&auto=format&fit=crop" },
+    { name: "Sewn Applique", price: "$0.50", image: "https://images.unsplash.com/photo-1553545204-4f7d339aa06a?q=80&w=500&auto=format&fit=crop" },
+    { name: "Leather Patch", price: "$1.00", image: "https://images.unsplash.com/photo-1520986606214-8b456906c813?q=80&w=500&auto=format&fit=crop" },
+    { name: "Sublimated", price: "$1.00", image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=500&auto=format&fit=crop" },
+    { name: "PVC Patch", price: "$1.50", image: "https://images.unsplash.com/photo-1605518216938-7f31b709d043?q=80&w=500&auto=format&fit=crop" },
+  ],
+
+  // HAT FABRIC OPTIONS (Specific Textures)
+  fabrics: [
+    { name: "Unbrushed Cotton", price: "Included", premium: false, image: "https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?q=80&w=500&auto=format&fit=crop" },
+    { name: "Brushed Cotton", price: "+$0.50", premium: false, image: "https://images.unsplash.com/photo-1613243555988-441166d4d6fd?q=80&w=500&auto=format&fit=crop" },
+    { name: "Corduroy", price: "+$1.50", premium: false, image: "https://images.unsplash.com/photo-1575909812264-9a3963a86310?q=80&w=500&auto=format&fit=crop" },
+    { name: "Canvas", price: "+$1.50", premium: false, image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=500&auto=format&fit=crop" },
+    { name: "Denim", price: "+$1.50", premium: false, image: "https://images.unsplash.com/photo-1582719471384-15233e025389?q=80&w=500&auto=format&fit=crop" },
+    { name: "Fleece", price: "+$1.50", premium: false, image: "https://images.unsplash.com/photo-1584589167171-541ce45f1eea?q=80&w=500&auto=format&fit=crop" },
+    { name: "Nylon", price: "+$1.50", premium: true, image: "https://images.unsplash.com/photo-1626497764746-6dc36546b388?q=80&w=500&auto=format&fit=crop" },
+    { name: "Wool Blend", price: "+$1.50", premium: true, image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=500&auto=format&fit=crop" },
+  ],
+
+  // COLOR OPTIONS
+  colors: {
+    solid: [
+      { name: "Black", hex: "#000000" },
+      { name: "White", hex: "#ffffff" },
+      { name: "Chalk", hex: "#f5f5f4" },
+      { name: "Ice Grey", hex: "#e5e7eb" },
+      { name: "Onyx", hex: "#374151" },
+      { name: "Safari", hex: "#d6d3d1" },
+      { name: "Proline Gold", hex: "#eab308" },
+      { name: "Chocolate", hex: "#451a03" },
+      { name: "Olive", hex: "#57534e" },
+      { name: "Forest", hex: "#14532d" },
+      { name: "Slate", hex: "#475569" },
+      { name: "Royal", hex: "#1e40af" },
+      { name: "Navy", hex: "#172554" },
+      { name: "Desert Orange", hex: "#ea580c" },
+      { name: "Maroon", hex: "#7f1d1d" },
+      { name: "Red", hex: "#dc2626" },
+      { name: "Pink", hex: "#ec4899" },
+    ],
+    heather: [
+      { name: "Heather Grey", hex: "#a3a3a3" },
+      { name: "Heather Charcoal", hex: "#525252" },
+    ]
+  },
+
+  // CLOSURE OPTIONS (Specific Views)
+  closures: [
+    { name: "Plastic Snap", image: "https://images.unsplash.com/photo-1521369909029-2afed882baee?q=80&w=500&auto=format&fit=crop" },
+    { name: "Velcro", image: "https://images.unsplash.com/photo-1618424181497-157f25b6ddd5?q=80&w=500&auto=format&fit=crop" },
+    { name: "Metal Slide", image: "https://images.unsplash.com/photo-1533827432537-70133748f5c8?q=80&w=500&auto=format&fit=crop" }, 
+    { name: "Metal Buckle", image: "https://images.unsplash.com/photo-1556306535-0f09a537f0a3?q=80&w=500&auto=format&fit=crop" },
+    { name: "Plastic Clip", image: "https://images.unsplash.com/photo-1521498542256-5aeb47ba2b36?q=80&w=500&auto=format&fit=crop" }
+  ],
+
+  // OTHER CUSTOM OPTIONS (Specific Details)
+  customOptions: [
+    { name: "Inside Label", price: "$0.25", image: "https://images.unsplash.com/photo-1606426073768-493428c46b6f?q=80&w=500&auto=format&fit=crop" },
+    { name: "Woven Tag", price: "$0.25", image: "https://images.unsplash.com/photo-1585155967849-91c736589c84?q=80&w=500&auto=format&fit=crop" },
+    { name: "Seam Tape", price: "$0.25", image: "https://images.unsplash.com/photo-1595329086891-987771059906?q=80&w=500&auto=format&fit=crop" },
+    { name: "Printed Fabric", price: "$0.50", image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=500&auto=format&fit=crop" },
+    { name: "Stamped Buckle", price: "$0.50", image: "https://images.unsplash.com/photo-1605518216938-7f31b709d043?q=80&w=500&auto=format&fit=crop" },
+    { name: "Bill Stitching", price: "$0.25", image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=500&auto=format&fit=crop" },
+    { name: "Underbill Print", price: "0.50", image: "https://images.unsplash.com/photo-1575428652377-a2d80e2277fc?q=80&w=500&auto=format&fit=crop" },
+    { name: "Pattern Rope", price: "0.50", image: "https://images.unsplash.com/photo-1617140679706-1c4809242b00?q=80&w=500&auto=format&fit=crop" },
+  ]
+};
+
+// --- COMPONENT: PRODUCT DETAIL PAGE ---
+const ProductDetailPage = ({ hat, onBack }) => (
+  <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 bg-zinc-50/50">
+    {/* Background Ambience */}
+    <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-100/50 rounded-full blur-[120px] translate-x-1/3 -translate-y-1/3 pointer-events-none z-0"></div>
+    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-100/50 rounded-full blur-[100px] -translate-x-1/3 translate-y-1/3 pointer-events-none z-0"></div>
+
+    {/* Navigation */}
+    <div className="relative z-20 max-w-[90rem] mx-auto px-6 pt-8 pb-4">
+      <button onClick={onBack} className="group flex items-center gap-3 text-zinc-400 hover:text-zinc-900 transition-colors font-bold text-xs uppercase tracking-[0.15em]">
+        <span className="p-2 rounded-full bg-white border border-zinc-200 group-hover:border-indigo-600 group-hover:text-indigo-600 transition-all"><ArrowLeft size={14} /></span>
+        Back to Catalog
+      </button>
+    </div>
+
+    {/* TOP SECTION: Split Layout (Product Only) */}
+    <div className="relative z-10 max-w-[90rem] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 pb-12">
+      
+      {/* LEFT: 3D Floating Product (Sticky) */}
+      <div className="lg:col-span-5 h-full">
+        <div className="sticky top-32 perspective-1000">
+          <div className="relative rounded-[3rem] overflow-hidden shadow-2xl shadow-indigo-900/20 border border-white bg-white group transform transition-transform duration-700 hover:rotate-x-2 hover:rotate-y-2">
+            
+            {/* Product Image - Ratio 4/3 (Smaller Height) */}
+            <div className="aspect-[4/3] relative overflow-hidden bg-zinc-100">
+              <img 
+                src={hat.image} 
+                alt={hat.title} 
+                className="w-full h-full object-cover mix-blend-multiply transition-transform duration-1000 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-900/5 to-transparent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT: Title, Specs, and Description */}
+      <div className="lg:col-span-7 flex flex-col justify-center pt-8">
+        
+        {/* Header Section */}
+        <div>
+          <div className="flex flex-wrap gap-3 mb-6">
+            <span className="px-4 py-1.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/30">Best Seller</span>
+            <span className="px-4 py-1.5 rounded-full bg-white border border-zinc-200 text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Fully Custom</span>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black uppercase text-zinc-900 mb-8 leading-[0.9] tracking-tight">
+            The <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Dad Cap</span>
+          </h1>
+
+          {/* Product Details & Specs */}
+          <div className="mb-8 pb-8 border-b border-zinc-200">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-indigo-600 font-bold uppercase tracking-widest text-xs mb-1">Style 3520</p>
+                <h2 className="text-3xl font-black uppercase text-zinc-900 leading-none">{hat.title}</h2>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-black text-white flex items-center justify-center shadow-md">
+                <Box size={20} />
+              </div>
+            </div>
+            
+            {/* Tech Specs Grid */}
+            <div className="grid grid-cols-3 gap-4 bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm">
+              {hat.specs.map((spec, i) => (
+                <div key={i} className="flex flex-col">
+                  <p className="text-[10px] font-bold uppercase text-zinc-400 mb-1">{spec.label}</p>
+                  <p className="text-sm font-black text-zinc-900">{spec.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* --- FULL WIDTH SECTIONS BELOW --- */}
+    <div className="relative z-10 max-w-[90rem] mx-auto px-6 pb-32 flex flex-col gap-24">
+
+      {/* --- 0. PRODUCT DESCRIPTION (New 3D Card) --- */}
+      <div className="bg-white p-12 rounded-[3rem] border border-white shadow-2xl shadow-zinc-200/50 relative overflow-hidden group transform hover:-translate-y-1 transition-transform duration-500">
+         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-blue-500"></div>
+         <div className="absolute -right-20 -top-20 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+         
+         <div className="relative z-10">
+           <h3 className="font-bold text-xs uppercase tracking-[0.2em] text-indigo-600 mb-6 flex items-center gap-2">
+              <Info size={16} /> About the Profile
+           </h3>
+           <p className="text-base text-zinc-600 leading-relaxed max-w-6xl">
+              {hat.desc}
+           </p>
+         </div>
+      </div>
+      
+      {/* --- 1. PRICING DASHBOARD (Centered Full Width) --- */}
+      <div className="space-y-10 max-w-5xl mx-auto w-full">
+        <div className="text-center border-b border-zinc-200 pb-8">
+           <div className="inline-flex p-3 bg-indigo-100 text-indigo-600 rounded-2xl mb-4"><DollarSign size={32} /></div>
+           <h3 className="font-black text-4xl uppercase tracking-tight text-zinc-900">Program Pricing</h3>
+           <p className="text-zinc-400 font-medium mt-2">Transparent tiers for every scale.</p>
+        </div>
+        
+        <div className="grid md:grid-cols-2 gap-8">
+          {hat.programs.map((prog, i) => (
+            <div key={i} className={`relative group rounded-[2.5rem] p-10 border transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${prog.highlight ? 'bg-zinc-900 text-white border-zinc-900 shadow-xl shadow-zinc-900/20' : 'bg-white text-zinc-900 border-zinc-200 shadow-sm'}`}>
+              {prog.highlight && <div className="absolute top-6 right-6 px-3 py-1 bg-indigo-500 text-white text-[10px] font-bold uppercase rounded-full tracking-widest">Recommended</div>}
+              
+              <h4 className="text-3xl font-black uppercase mb-3">{prog.name}</h4>
+              <p className={`text-sm mb-10 leading-relaxed ${prog.highlight ? 'text-zinc-400' : 'text-zinc-500'}`}>{prog.desc}</p>
+              
+              <div className="space-y-3 mb-10">
+                {prog.pricing.map((tier, idx) => (
+                  <div key={idx} className={`flex justify-between items-center p-4 rounded-xl ${prog.highlight ? 'bg-white/5' : 'bg-zinc-50'}`}>
+                    <span className={`text-xs font-bold uppercase ${prog.highlight ? 'text-zinc-500' : 'text-zinc-400'}`}>{tier.qty} Units</span>
+                    <span className="text-xl font-black">{tier.price}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className={`grid grid-cols-2 gap-4 pt-8 border-t ${prog.highlight ? 'border-white/10' : 'border-zinc-100'}`}>
+                <div>
+                  <p className={`text-[10px] font-bold uppercase ${prog.highlight ? 'text-zinc-500' : 'text-zinc-400'}`}>Sample Time</p>
+                  <p className="font-bold text-lg">{prog.sampleTime}</p>
+                </div>
+                <div>
+                  <p className={`text-[10px] font-bold uppercase ${prog.highlight ? 'text-zinc-500' : 'text-zinc-400'}`}>Production</p>
+                  <p className="font-bold text-lg">{prog.productionTime}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* --- 2. FABRIC LAB --- */}
+      <div className="space-y-10">
+        <div className="flex items-center justify-between border-b border-zinc-200 pb-6">
+          <h3 className="font-black text-4xl uppercase tracking-tight text-zinc-900 flex items-center gap-4">
+            <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl"><Layers size={32} /></div>
+            Fabric Selection
+          </h3>
+          <p className="text-zinc-400 font-medium hidden md:block">Choose from our premium material library.</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+          {hat.fabrics.map((fab, i) => (
+            <div key={i} className="group relative bg-white rounded-[2rem] border border-zinc-200 overflow-hidden cursor-pointer transition-all hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-200 hover:-translate-y-2">
+              <div className="h-40 bg-zinc-100 relative">
+                <img src={fab.image} alt={fab.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                {fab.premium && <span className="absolute top-3 right-3 bg-black/80 backdrop-blur text-white text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">Premium</span>}
+              </div>
+              <div className="p-5 text-center">
+                <h4 className="font-bold text-sm text-zinc-900 mb-1">{fab.name}</h4>
+                <p className={`text-xs font-bold ${fab.price === 'Included' ? 'text-green-600' : 'text-zinc-400'}`}>{fab.price}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* --- 3. DECORATION SUITE --- */}
+      <div className="space-y-10">
+        <div className="flex items-center justify-between border-b border-zinc-200 pb-6">
+          <h3 className="font-black text-4xl uppercase tracking-tight text-zinc-900 flex items-center gap-4">
+            <div className="p-3 bg-purple-100 text-purple-600 rounded-2xl"><Shield size={32} /></div>
+            Branding Methods
+          </h3>
+          <p className="text-zinc-400 font-medium hidden md:block">High-impact decoration techniques.</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          {hat.decorations.map((opt, i) => (
+            <div key={i} className="group bg-white rounded-[2rem] p-3 border border-zinc-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer flex flex-col gap-3">
+              <div className="h-36 rounded-2xl overflow-hidden bg-zinc-50 relative">
+                  <img src={opt.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  <div className={`absolute bottom-3 left-3 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${opt.price === 'Included' ? 'bg-green-400 text-green-950' : 'bg-white text-zinc-900 shadow-sm'}`}>
+                    {opt.price}
+                  </div>
+              </div>
+              <div className="px-2 pb-2 text-center">
+                <span className="font-bold text-sm text-zinc-900 block">{opt.name}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* --- 4. COLORS & EXTRAS --- */}
+      <div className="grid lg:grid-cols-2 gap-16">
+        {/* Colors */}
+        <div className="bg-white p-10 rounded-[3rem] border border-zinc-200 shadow-lg shadow-zinc-200/50">
+          <h3 className="font-black text-3xl uppercase tracking-tight text-zinc-900 mb-8 flex items-center gap-3">
+            <Palette size={28} className="text-indigo-600" /> Color Palette
+          </h3>
+          <div className="flex flex-wrap gap-4">
+            {hat.colors.solid.map((c, i) => (
+              <div key={i} className="group relative">
+                <div className="w-14 h-14 rounded-full border-4 border-white shadow-md ring-1 ring-zinc-200 cursor-pointer transition-transform hover:scale-110 hover:ring-indigo-400" style={{ backgroundColor: c.hex }} title={c.name}></div>
+                <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{c.name}</span>
+              </div>
+            ))}
+            <div className="w-14 h-14 rounded-full border-2 border-dashed border-zinc-300 flex items-center justify-center text-sm font-bold text-zinc-400">+20</div>
+          </div>
+          
+          <div className="mt-10 pt-8 border-t border-zinc-100">
+             <h4 className="font-bold text-sm uppercase text-zinc-400 mb-4">Heather Options (+$0.50)</h4>
+             <div className="flex gap-4">
+                {hat.colors.heather.map((c, i) => (
+                  <div key={i} className="w-14 h-14 rounded-full border-4 border-white shadow-md ring-1 ring-zinc-200 cursor-pointer transition-transform hover:scale-110" style={{ backgroundColor: c.hex }} title={c.name}></div>
+                ))}
+             </div>
+          </div>
+        </div>
+
+        {/* Closures */}
+        <div className="bg-white p-10 rounded-[3rem] border border-zinc-200 shadow-lg shadow-zinc-200/50">
+          <h3 className="font-black text-3xl uppercase tracking-tight text-zinc-900 mb-8 flex items-center gap-3">
+            <Tag size={28} className="text-indigo-600" /> Closures
+          </h3>
+          <div className="space-y-4">
+            {hat.closures.map((closure, i) => (
+              <div key={i} className="flex items-center gap-6 p-4 rounded-3xl hover:bg-zinc-50 transition-colors group cursor-pointer border border-transparent hover:border-zinc-100">
+                <div className="h-16 w-20 rounded-2xl overflow-hidden bg-zinc-100 relative shadow-inner">
+                  <img src={closure.image} className="w-full h-full object-cover" />
+                </div>
+                <span className="font-bold text-lg text-zinc-600 group-hover:text-indigo-600 transition-colors">{closure.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* --- 5. PREMIUM FINISHINGS --- */}
+      <div className="space-y-10">
+        <div className="flex items-center justify-between border-b border-zinc-200 pb-6">
+          <h3 className="font-black text-4xl uppercase tracking-tight text-zinc-900 flex items-center gap-4">
+            <div className="p-3 bg-amber-100 text-amber-600 rounded-2xl"><Settings size={32} /></div>
+            Premium Finishings
+          </h3>
+          <p className="text-zinc-400 font-medium hidden md:block">Upgrade with retail-ready details.</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {hat.customOptions.map((opt, i) => (
+            <div key={i} className="group bg-white rounded-[2rem] border border-zinc-200 overflow-hidden hover:shadow-xl hover:border-amber-300 transition-all cursor-pointer hover:-translate-y-1">
+              <div className="h-32 bg-zinc-50 relative overflow-hidden">
+                <img src={opt.image} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 mix-blend-multiply" />
+              </div>
+              <div className="p-5 flex flex-col items-center text-center gap-2">
+                <span className="font-bold text-sm text-zinc-900">{opt.name}</span>
+                <span className="text-[10px] font-bold bg-zinc-100 text-zinc-500 px-3 py-1 rounded-full">{opt.price}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  </div>
+);
+
+// --- COMPONENT: MAIN APP ---
+const SwagoLearn = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedHat, setSelectedHat] = useState(dadCapData); 
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedHat]);
+
+  return (
+    <div className="min-h-screen bg-[#FDFBF7] text-zinc-900 font-sans selection:bg-indigo-500 selection:text-white overflow-x-hidden">
+      {/* --- NAVBAR --- */}
+      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-zinc-200">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.reload()}>
+            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+              <span className="text-white font-black text-2xl tracking-tighter">S.</span>
+            </div>
+            <span className="text-2xl font-bold tracking-tighter hidden md:block text-black">SWAGO</span>
+          </div>
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-500">
+            <a href="#" className="text-black font-bold">Learn</a>
+            <a href="#" className="hover:text-black transition-colors">Products</a>
+            <a href="#" className="hover:text-black transition-colors">Decorations</a>
+            <a href="#" className="hover:text-black transition-colors text-indigo-600">Start Project</a>
+          </div>
+          <div className="flex items-center gap-6 text-zinc-800">
+            <button className="hover:text-indigo-600 transition-colors"><Search size={20} /></button>
+            <button className="md:hidden" onClick={() => setIsMenuOpen(true)}><Menu size={24} /></button>
+          </div>
+        </div>
+      </nav>
+
+      {/* --- MAIN CONTENT --- */}
+      {selectedHat ? (
+        <ProductDetailPage hat={selectedHat} onBack={() => console.log("Back to catalog")} />
+      ) : (
+        <div className="p-24 text-center">Loading Catalog...</div>
+      )}
+
+      {/* --- FOOTER --- */}
+      <footer className="bg-zinc-100 border-t border-zinc-200 pt-20 pb-12 px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div className="col-span-1 md:col-span-2">
+            <h2 className="text-4xl font-black tracking-tighter mb-6 text-black">SWAGO.</h2>
+            <p className="text-zinc-600 max-w-sm mb-8">
+              The premier destination for custom headwear. We bridge the gap between street culture and professional merchandising.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-bold uppercase tracking-widest text-xs text-zinc-900 mb-6">Shop</h4>
+            <ul className="space-y-4 text-sm text-zinc-500">
+              <li><a href="#" className="hover:text-black">All Hats</a></li>
+              <li><a href="#" className="hover:text-black">New Arrivals</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-bold uppercase tracking-widest text-xs text-zinc-900 mb-6">Support</h4>
+            <ul className="space-y-4 text-sm text-zinc-500">
+              <li><a href="#" className="hover:text-black">Track Order</a></li>
+              <li><a href="#" className="hover:text-black">Contact Us</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto border-t border-zinc-200 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-zinc-500">
+          <p>© 2025 Swago Inc. All rights reserved.</p>
+          <div className="flex gap-6 mt-4 md:mt-0">
+            <a href="#" className="hover:text-black">Privacy</a>
+            <a href="#" className="hover:text-black">Terms</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default SwagoLearn;
