@@ -1,0 +1,619 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Menu, X, Search, ArrowRight, 
+  Info, ChevronDown, Layers, ArrowLeft,
+  Scissors, Tag, PenTool, Check, Printer, Zap, Image as ImageIcon, Box,
+  Palette, Ruler, Shield, ShoppingBag
+} from 'lucide-react';
+
+// --- DATA: HAT CATEGORIES & STYLES ---
+const hatCategories = [
+  {
+    id: "ballcaps",
+    title: "Custom Ball Caps",
+    description: "Timeless curved bill silhouettes designed for comfort, athletic performance, and everyday style.",
+    items: [
+      {
+        id: 'dadhat-classic',
+        title: "Classic Dad Hat",
+        subtitle: "Cotton Twill",
+        desc: "Timeless comfort. The 'Dad Hat' is characterized by its unstructured crown and curved brim, offering a vintage, lived-in feel from day one.",
+        image: "https://images.unsplash.com/photo-1533827432537-70133748f5c8?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#fca5a5", "#fde047", "#86efac", "#d8b4fe"],
+        bestFor: ["Direct Embroidery", "Woven Label"],
+        specs: [ { label: "Profile", value: "Low" }, { label: "Closure", value: "Buckle" } ]
+      },
+      {
+        id: 'baseball-structured',
+        title: "Pro Baseball",
+        subtitle: "Structured Poly",
+        desc: "The standard for sports. Features a structured front panel that keeps its shape, moisture-wicking fabric, and a classic curved bill.",
+        image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#000000", "#1e3a8a", "#b91c1c"],
+        bestFor: ["3D Embroidery", "Patch"],
+        specs: [ { label: "Profile", value: "Mid" }, { label: "Closure", value: "Velcro" } ]
+      },
+      {
+        id: 'dadhat-eco',
+        title: "Eco Dad Hat",
+        subtitle: "Organic Cotton",
+        desc: "Sustainable style. Made from 100% organic cotton with a bio-washed finish for softness without the environmental impact.",
+        image: "https://images.unsplash.com/photo-1521369909029-2afed882baee?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#57534e", "#78716c"],
+        bestFor: ["Embroidery", "Clip Label"],
+        specs: [ { label: "Profile", value: "Low" }, { label: "Closure", value: "Slide" } ]
+      },
+      {
+        id: 'baseball-rope',
+        title: "Rope Cap",
+        subtitle: "Vintage Golf Style",
+        desc: "Retro performance. A structured 5-panel cap with a braided rope detail across the visor. Popular on and off the course.",
+        image: "https://images.unsplash.com/photo-1575428652377-a2d80e2277fc?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#ffffff", "#15803d"],
+        bestFor: ["Embroidery", "Patch"],
+        specs: [ { label: "Profile", value: "High" }, { label: "Closure", value: "Snap" } ]
+      },
+      {
+        id: 'dadhat-distressed',
+        title: "Distressed Cap",
+        subtitle: "Washed & Worn",
+        desc: "Pre-worn aesthetic. Features frayed edges and a heavy enzyme wash for a rugged, broken-in look immediately.",
+        image: "https://images.unsplash.com/photo-1622445275576-721325763afe?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#1c1917", "#292524"],
+        bestFor: ["Applique", "Embroidery"],
+        specs: [ { label: "Profile", value: "Low" }, { label: "Closure", value: "Buckle" } ]
+      },
+      {
+        id: 'baseball-perf',
+        title: "Performance Lite",
+        subtitle: "Laser Perforated",
+        desc: "Maximum breathability. Lightweight polyester with laser-cut holes on the side panels for ultimate airflow during activity.",
+        image: "https://images.unsplash.com/photo-1556306535-0f09a537f0a3?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#2563eb", "#000000"],
+        bestFor: ["Silicone Transfer", "Print"],
+        specs: [ { label: "Profile", value: "Mid" }, { label: "Closure", value: "Velcro" } ]
+      }
+    ]
+  },
+  {
+    id: "truckers",
+    title: "Custom Trucker Hats",
+    description: "The industry standard. Breathable mesh backs paired with structured fronts for bold, iconic branding.",
+    items: [
+      {
+        id: 'trucker-classic',
+        title: "Classic Trucker",
+        subtitle: "6-Panel Snapback",
+        desc: "The quintessential snapback. Poly-cotton front for structure and a breathable mesh back. The high-profile crown offers a perfect canvas.",
+        image: "https://images.unsplash.com/photo-1575428652377-a2d80e2277fc?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#18181b", "#2563eb"],
+        bestFor: ["Patches", "Embroidery"],
+        specs: [ { label: "Profile", value: "Mid" }, { label: "Closure", value: "Snap" } ]
+      },
+      {
+        id: 'trucker-foam',
+        title: "Foam Trucker",
+        subtitle: "5-Panel Foam Front",
+        desc: "Retro vibes. Soft, seamless polyester foam panel front. Creates a smooth surface ideal for screen printing intricate designs.",
+        image: "https://images.unsplash.com/photo-1514327605112-b887c0e61c0a?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#2dd4bf", "#fb7185"],
+        bestFor: ["Screen Print", "Sublimation"],
+        specs: [ { label: "Profile", value: "High" }, { label: "Closure", value: "Snap" } ]
+      },
+      {
+        id: 'trucker-retro',
+        title: "Retro Trucker",
+        subtitle: "Low Profile Mesh",
+        desc: "A lower profile take on the classic trucker. Fits closer to the head with a more tailored, vintage aesthetic.",
+        image: "https://images.unsplash.com/photo-1521369909029-2afed882baee?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#713f12", "#f59e0b"],
+        bestFor: ["Patch", "Embroidery"],
+        specs: [ { label: "Profile", value: "Low" }, { label: "Closure", value: "Snap" } ]
+      },
+      {
+        id: 'trucker-camo',
+        title: "Camo Trucker",
+        subtitle: "Patterned Front",
+        desc: "Outdoor ready. Features woodland or digital camo patterns on the front panels and visor with a solid mesh back.",
+        image: "https://images.unsplash.com/photo-1533827432537-70133748f5c8?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#3f6212", "#1e293b"],
+        bestFor: ["Orange Embroidery", "Patch"],
+        specs: [ { label: "Profile", value: "Mid" }, { label: "Closure", value: "Snap" } ]
+      },
+      {
+        id: 'trucker-7panel',
+        title: "7-Panel Trucker",
+        subtitle: "Seamless Front",
+        desc: "Modern construction. A unique 7-panel design with a flat bill and a seamless front panel perfect for large, uninterrupted patches.",
+        image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#475569", "#0f172a"],
+        bestFor: ["Leather Patch", "Print"],
+        specs: [ { label: "Profile", value: "High" }, { label: "Closure", value: "Snap" } ]
+      },
+      {
+        id: 'trucker-kids',
+        title: "Youth Trucker",
+        subtitle: "Sized for Kids",
+        desc: "Same great style, smaller package. Perfectly scaled down for youth sports teams, schools, and merchandise lines.",
+        image: "https://images.unsplash.com/photo-1556306535-0f09a537f0a3?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#ef4444", "#3b82f6"],
+        bestFor: ["Screen Print", "Embroidery"],
+        specs: [ { label: "Profile", value: "Mid" }, { label: "Closure", value: "Snap" } ]
+      }
+    ]
+  },
+  {
+    id: "flatbills",
+    title: "Custom Flatbill Hats",
+    description: "Modern, urban, and structured. The choice for streetwear labels and high-impact, geometric logos.",
+    items: [
+      {
+        id: 'flat-premium',
+        title: "Premium Snapback",
+        subtitle: "Wool Blend",
+        desc: "The industry icon. 6-panel structured crown with a flat bill. Made from a premium wool blend for a luxurious feel.",
+        image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#000000", "#4b5563"],
+        bestFor: ["3D Embroidery", "Stickers"],
+        specs: [ { label: "Profile", value: "High" }, { label: "Closure", value: "Snap" } ]
+      },
+      {
+        id: 'flat-5panel',
+        title: "5-Panel Flat",
+        subtitle: "Cotton Twill",
+        desc: "Clean and uninterrupted. The 5-panel construction removes the center seam, allowing for large screen prints and detailed embroidery.",
+        image: "https://images.unsplash.com/photo-1521498542256-5aeb47ba2b36?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#1e1b4b", "#ffffff"],
+        bestFor: ["Screen Print", "Patch"],
+        specs: [ { label: "Profile", value: "High" }, { label: "Closure", value: "Snap" } ]
+      },
+      {
+        id: 'flat-fitted',
+        title: "Fitted Flat Bill",
+        subtitle: "Closed Back",
+        desc: "The pro look. A sized, closed-back cap with a flexfit band for a tailored, secure fit without a plastic strap.",
+        image: "https://images.unsplash.com/photo-1575428652377-a2d80e2277fc?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#000000", "#1d4ed8"],
+        bestFor: ["Side Embroidery", "3D Front"],
+        specs: [ { label: "Profile", value: "High" }, { label: "Closure", value: "Fitted" } ]
+      },
+      {
+        id: 'flat-corduroy',
+        title: "Corduroy Flat",
+        subtitle: "Vintage Texture",
+        desc: "Texture is everything. Wide-wale corduroy fabric gives this flat bill a retro, sophisticated streetwear edge.",
+        image: "https://images.unsplash.com/photo-1533827432537-70133748f5c8?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#78350f", "#064e3b"],
+        bestFor: ["Simple Embroidery", "Patch"],
+        specs: [ { label: "Profile", value: "Mid" }, { label: "Closure", value: "Snap" } ]
+      },
+      {
+        id: 'flat-two-tone',
+        title: "Two-Tone Snap",
+        subtitle: "Contrast Visor",
+        desc: "Bold contrast. Features a visor color different from the crown, perfect for matching team or brand color palettes.",
+        image: "https://images.unsplash.com/photo-1556306535-0f09a537f0a3?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#000000/Red", "#Grey/Black"],
+        bestFor: ["Logo Match", "Embroidery"],
+        specs: [ { label: "Profile", value: "High" }, { label: "Closure", value: "Snap" } ]
+      },
+      {
+        id: 'flat-nylon',
+        title: "Nylon Tech",
+        subtitle: "Water Resistant",
+        desc: "Performance streetwear. Made from lightweight, water-resistant nylon. Great for festivals and outdoor urban wear.",
+        image: "https://images.unsplash.com/photo-1622445275576-721325763afe?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#3f3f46", "#000000"],
+        bestFor: ["Rubber Patch", "Print"],
+        specs: [ { label: "Profile", value: "Mid" }, { label: "Closure", value: "Clip" } ]
+      }
+    ]
+  },
+  {
+    id: "lifestyle",
+    title: "Custom Lifestyle Hats",
+    description: "Trend-forward silhouettes for the outdoors, festivals, and casual wear.",
+    items: [
+      {
+        id: 'camper',
+        title: "Camper Hat",
+        subtitle: "5-Panel Modern Fit",
+        desc: "The outdoorsman's choice. Low profile with a flat bill and unique 5-panel construction. Lightweight nylon or canvas.",
+        image: "https://images.unsplash.com/photo-1521498542256-5aeb47ba2b36?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#57534e", "#78350f"],
+        bestFor: ["Woven Patch", "Leather Patch"],
+        specs: [ { label: "Profile", value: "Low" }, { label: "Closure", value: "Clip" } ]
+      },
+      {
+        id: 'bucket-classic',
+        title: "Bucket Hat",
+        subtitle: "360° Sun Protection",
+        desc: "Street meets sun. The bucket hat offers 360-degree shade with a relaxed, unstructured fit. A versatile canvas.",
+        image: "https://images.unsplash.com/photo-1622445275576-721325763afe?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#ffffff", "#000000"],
+        bestFor: ["Embroidery", "All Over Print"],
+        specs: [ { label: "Profile", value: "Low" }, { label: "Brim", value: "2.5\"" } ]
+      },
+      {
+        id: 'bucket-safari',
+        title: "Safari Bucket",
+        subtitle: "Wide Brim & Cord",
+        desc: "Adventure ready. Features a wider brim for maximum sun protection and a drawstring chin cord for security.",
+        image: "https://images.unsplash.com/photo-1533827432537-70133748f5c8?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#d4d4d8", "#a1a1aa"],
+        bestFor: ["Patch", "Embroidery"],
+        specs: [ { label: "Profile", value: "Mid" }, { label: "Brim", value: "3.5\"" } ]
+      },
+      {
+        id: 'visor-sport',
+        title: "Sport Visor",
+        subtitle: "Performance Fabric",
+        desc: "Topless ventilation. Ideal for tennis, golf, and running. Keeps the sun out of your eyes while keeping your head cool.",
+        image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#ffffff", "#000000"],
+        bestFor: ["Embroidery", "Print"],
+        specs: [ { label: "Profile", value: "Low" }, { label: "Closure", value: "Velcro" } ]
+      },
+      {
+        id: 'cap-runner',
+        title: "Runner Cap",
+        subtitle: "Unstructured Mesh",
+        desc: "For the long haul. Ultra-lightweight, unstructured 5-panel with extensive mesh venting. Folds up into your pocket.",
+        image: "https://images.unsplash.com/photo-1556306535-0f09a537f0a3?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#fcd34d", "#60a5fa"],
+        bestFor: ["Reflective Print", "Sublimation"],
+        specs: [ { label: "Profile", value: "Low" }, { label: "Closure", value: "Clip" } ]
+      },
+      {
+        id: 'boonie',
+        title: "Boonie Hat",
+        subtitle: "Tactical Shade",
+        desc: "Military inspired. Wide brim with branch loops and a chin strap. Rugged construction for tough environments.",
+        image: "https://images.unsplash.com/photo-1575428652377-a2d80e2277fc?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#3f6212", "#a8a29e"],
+        bestFor: ["Patch", "Embroidery"],
+        specs: [ { label: "Profile", value: "Mid" }, { label: "Brim", value: "Wide" } ]
+      }
+    ]
+  },
+  {
+    id: "other",
+    title: "Other Styles",
+    description: "Cold weather essentials and specialty headwear crafted for warmth and specific needs.",
+    items: [
+      {
+        id: 'beanie-cuffed',
+        title: "Cuffed Beanie",
+        subtitle: "Winter Essential",
+        desc: "The classic cold-weather staple. Dense acrylic knit with a fold-over cuff, perfect for an embroidered logo.",
+        image: "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#000000", "#52525b"],
+        bestFor: ["Embroidery", "Clip Label"],
+        specs: [ { label: "Fit", value: "Standard" }, { label: "Fabric", value: "Acrylic" } ]
+      },
+      {
+        id: 'beanie-slouch',
+        title: "Slouch Beanie",
+        subtitle: "Relaxed Knit",
+        desc: "Longer length for a relaxed, slouchy fit. No cuff allows for a larger decoration area near the hem.",
+        image: "https://images.unsplash.com/photo-1533827432537-70133748f5c8?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#475569", "#94a3b8"],
+        bestFor: ["Patch", "Clip Label"],
+        specs: [ { label: "Fit", value: "Loose" }, { label: "Fabric", value: "Knit" } ]
+      },
+      {
+        id: 'beanie-pom',
+        title: "Pom Beanie",
+        subtitle: "Top Pom-Pom",
+        desc: "Festive and fun. Features a matching or contrasting yarn pom-pom on top. A favorite for ski resorts and winter merch.",
+        image: "https://images.unsplash.com/photo-1556306535-0f09a537f0a3?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#Red/White", "#Blue/White"],
+        bestFor: ["Jacquard Knit", "Embroidery"],
+        specs: [ { label: "Fit", value: "Standard" }, { label: "Detail", value: "Pom" } ]
+      },
+      {
+        id: 'beanie-waffle',
+        title: "Waffle Beanie",
+        subtitle: "Textured Knit",
+        desc: "Thermal texture. The waffle knit pattern provides extra warmth and a distinct, rugged look.",
+        image: "https://images.unsplash.com/photo-1521369909029-2afed882baee?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#d97706", "#1e293b"],
+        bestFor: ["Leather Patch", "Label"],
+        specs: [ { label: "Fit", value: "Standard" }, { label: "Fabric", value: "Waffle" } ]
+      },
+      {
+        id: 'cap-cycling',
+        title: "Cycling Cap",
+        subtitle: "Short Bill",
+        desc: "Under-helmet essential. Lightweight cotton or tech fabric with a short, flip-up bill.",
+        image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#ffffff", "#000000"],
+        bestFor: ["Screen Print", "Sublimation"],
+        specs: [ { label: "Profile", value: "Low" }, { label: "Bill", value: "Short" } ]
+      },
+      {
+        id: 'beanie-fleece',
+        title: "Fleece Beanie",
+        subtitle: "Performance Warmth",
+        desc: "Active warmth. Smooth fleece fabric that is wind-resistant and moisture-wicking. Ideal for winter sports.",
+        image: "https://images.unsplash.com/photo-1622445275576-721325763afe?q=80&w=1000&auto=format&fit=crop",
+        colors: ["#000000", "#1f2937"],
+        bestFor: ["Embroidery", "Heat Transfer"],
+        specs: [ { label: "Fit", value: "Snug" }, { label: "Fabric", value: "Fleece" } ]
+      }
+    ]
+  }
+];
+
+// --- COMPONENT: PRODUCT DETAIL PAGE ---
+const ProductDetailPage = ({ hat, onBack }) => (
+  <div className="animate-in fade-in slide-in-from-bottom-8 duration-500">
+    {/* Back Navigation */}
+    <div className="max-w-7xl mx-auto px-6 pt-12 pb-6">
+      <button onClick={onBack} className="flex items-center gap-2 text-zinc-500 hover:text-indigo-600 transition-colors font-bold text-sm uppercase tracking-widest">
+        <ArrowLeft size={16} /> Back to Catalog
+      </button>
+    </div>
+
+    {/* Main Content */}
+    <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 pb-24">
+      
+      {/* Left: Hero Image (Sticky) */}
+      <div className="relative lg:sticky lg:top-32 h-fit">
+        <div className="relative rounded-[3rem] overflow-hidden shadow-2xl shadow-indigo-900/20 border border-white bg-white group perspective-1000">
+          <div className="aspect-square relative overflow-hidden transform transition-all duration-700 group-hover:scale-105">
+            <img 
+              src={hat.image} 
+              alt={hat.title} 
+              className="w-full h-full object-cover mix-blend-multiply"
+            />
+            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-900/10 to-transparent opacity-50"></div>
+          </div>
+          {/* Floating Badge */}
+          <div className="absolute top-8 left-8 bg-white/90 backdrop-blur-md px-6 py-3 rounded-full shadow-lg border border-white">
+            <span className="text-indigo-600 font-black uppercase tracking-widest text-xs">{hat.subtitle}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right: Details */}
+      <div className="flex flex-col justify-center">
+        <h1 className="text-5xl md:text-6xl font-black uppercase text-zinc-900 mb-6 leading-[0.9]">{hat.title}</h1>
+        <p className="text-lg text-zinc-500 leading-relaxed mb-12 border-l-4 border-indigo-100 pl-6">
+          {hat.desc}
+        </p>
+
+        {/* Specs Grid */}
+        <div className="mb-12">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-6 flex items-center gap-2">
+            <Ruler size={14} /> Technical Specs
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {hat.specs.map((spec, i) => (
+              <div key={i} className="bg-white border border-zinc-100 p-4 rounded-2xl shadow-sm">
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mb-1">{spec.label}</p>
+                <p className="text-sm font-bold text-zinc-900">{spec.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Colors */}
+        <div className="mb-12">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-6 flex items-center gap-2">
+            <Palette size={14} /> Available Colors
+          </h3>
+          <div className="flex gap-3">
+            {hat.colors.map((color, i) => (
+              <div key={i} className="group relative cursor-pointer">
+                <div 
+                  className="w-10 h-10 rounded-full border-2 border-white shadow-md ring-1 ring-zinc-200 transition-transform hover:scale-125"
+                  style={{ backgroundColor: color }}
+                />
+              </div>
+            ))}
+            <div className="w-10 h-10 rounded-full border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 text-[10px] font-bold">
+              +12
+            </div>
+          </div>
+        </div>
+
+        {/* Recommended Decorations */}
+        <div className="mb-16">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-6 flex items-center gap-2">
+            <Shield size={14} /> Best For
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {hat.bestFor.map((tech, i) => (
+              <span key={i} className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold uppercase tracking-wide border border-indigo-100">
+                {tech}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="p-8 bg-zinc-900 rounded-3xl text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-zinc-900/20">
+          <div>
+            <h4 className="font-bold text-xl mb-1">Ready to create?</h4>
+            <p className="text-zinc-400 text-sm">Start a quote with this profile.</p>
+          </div>
+          <button className="bg-white text-black px-8 py-3 rounded-xl font-bold uppercase text-sm tracking-widest hover:bg-indigo-500 hover:text-white transition-colors whitespace-nowrap">
+            Start Project
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+);
+
+// --- COMPONENT: MAIN APP ---
+const SwagoLearn = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedHat, setSelectedHat] = useState(null);
+
+  // Scroll to top when switching views
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedHat]);
+
+  return (
+    <div className="min-h-screen bg-[#FDFBF7] text-zinc-900 font-sans selection:bg-indigo-500 selection:text-white overflow-x-hidden">
+      
+      {/* --- NAVBAR --- */}
+      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-zinc-200">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setSelectedHat(null)}>
+            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+              <span className="text-white font-black text-2xl tracking-tighter">S.</span>
+            </div>
+            <span className="text-2xl font-bold tracking-tighter hidden md:block text-black">SWAGO</span>
+          </div>
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-500">
+            <a href="#" className="text-black font-bold">Learn</a>
+            <a href="#" className="hover:text-black transition-colors">Products</a>
+            <a href="#" className="hover:text-black transition-colors">Decorations</a>
+            <a href="#" className="hover:text-black transition-colors text-indigo-600">Start Project</a>
+          </div>
+          <div className="flex items-center gap-6 text-zinc-800">
+            <button className="hover:text-indigo-600 transition-colors"><Search size={20} /></button>
+            <button className="md:hidden" onClick={() => setIsMenuOpen(true)}><Menu size={24} /></button>
+          </div>
+        </div>
+      </nav>
+
+      {/* --- VIEW CONTROLLER --- */}
+      {selectedHat ? (
+        <ProductDetailPage hat={selectedHat} onBack={() => setSelectedHat(null)} />
+      ) : (
+        /* MAIN CATALOG PAGE */
+        <>
+          {/* HAT CATEGORIES LOOP */}
+          {hatCategories.map((category, index) => (
+            <section key={category.id} className={`py-24 px-6 relative border-t border-zinc-200/50 bg-zinc-50/50 ${index === 0 ? 'pt-32' : ''}`}>
+              <div className="max-w-7xl mx-auto">
+                
+                {/* 3D Category Header Card */}
+                <div className="relative mb-20 max-w-5xl mx-auto perspective-1000">
+                  <div className="absolute inset-0 bg-zinc-200 rounded-[3rem] transform translate-y-4 translate-x-0 scale-[0.98]"></div>
+                  
+                  <div className="relative bg-white border border-white p-10 rounded-[3rem] shadow-2xl shadow-zinc-200/50 overflow-hidden flex flex-col items-start text-left">
+                    <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-zinc-50 to-transparent"></div>
+                    
+                    <div className="relative z-10 w-full">
+                      <div className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.15em] mb-6 shadow-lg shadow-zinc-900/20">
+                        <Tag size={14} className="text-indigo-400" /> Collection
+                      </div>
+                      
+                      <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6 text-zinc-900 leading-[0.9] drop-shadow-sm">
+                        {category.title}
+                      </h2>
+                      
+                      <div className="w-24 h-1 bg-indigo-600 mb-8 rounded-full"></div>
+                      
+                      <p className="text-zinc-500 text-lg font-medium leading-relaxed max-w-2xl">
+                        {category.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 perspective-1000">
+                  {category.items.map((hat) => (
+                    <div 
+                      key={hat.id} 
+                      onClick={() => setSelectedHat(hat)}
+                      className="group relative bg-white rounded-[2rem] border border-white shadow-xl shadow-indigo-900/5 overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/20 transition-all duration-500 hover:-translate-y-2 cursor-pointer"
+                    >
+                      {/* Image Area */}
+                      <div className="relative h-80 overflow-hidden bg-[#F0F2F5]">
+                        <img 
+                          src={hat.image} 
+                          alt={hat.title} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 mix-blend-multiply"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-8">
+                          <p className="text-white font-bold uppercase tracking-widest text-sm flex items-center gap-2">
+                            View Details <ArrowRight size={16} />
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Content Area */}
+                      <div className="p-8 relative bg-white/90 backdrop-blur-xl">
+                        <h3 className="text-2xl font-black uppercase text-zinc-900 leading-none mb-1">{hat.title}</h3>
+                        <p className="text-sm font-bold text-indigo-500 tracking-wide">{hat.subtitle}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ))}
+        </>
+      )}
+
+      {/* --- MOBILE MENU OVERLAY --- */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 bg-white z-50 flex flex-col p-6">
+          <div className="flex justify-end mb-8">
+            <button onClick={() => setIsMenuOpen(false)} className="text-black"><X size={32} /></button>
+          </div>
+          <div className="flex flex-col gap-6 text-2xl font-bold uppercase tracking-tight">
+            <a href="#" onClick={() => setSelectedHat(null)}>Learn Hats</a>
+            <a href="#">Products</a>
+            <a href="#">Decorations</a>
+            <a href="#">Contact</a>
+          </div>
+        </div>
+      )}
+
+      {/* --- FOOTER --- */}
+      <footer className="bg-zinc-100 border-t border-zinc-200 pt-20 pb-12 px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div className="col-span-1 md:col-span-2">
+            <h2 className="text-4xl font-black tracking-tighter mb-6 text-black">SWAGO.</h2>
+            <p className="text-zinc-600 max-w-sm mb-8">
+              The premier destination for custom headwear. We bridge the gap between street culture and professional merchandising.
+            </p>
+            <div className="flex gap-4">
+              <input type="email" placeholder="Join the list" className="bg-white border border-zinc-300 px-4 py-3 rounded-lg text-sm w-full max-w-[200px] text-black focus:outline-none focus:border-indigo-500" />
+              <button className="bg-black text-white px-6 py-3 rounded-lg font-bold text-sm uppercase hover:bg-zinc-800 transition-colors">Join</button>
+            </div>
+          </div>
+          
+          <div>
+            <h4 className="font-bold uppercase tracking-widest text-xs text-zinc-900 mb-6">Shop</h4>
+            <ul className="space-y-4 text-sm text-zinc-500">
+              <li><a href="#" className="hover:text-black">All Hats</a></li>
+              <li><a href="#" className="hover:text-black">New Arrivals</a></li>
+              <li><a href="#" className="hover:text-black">Best Sellers</a></li>
+              <li><a href="#" className="hover:text-black">Sale</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-bold uppercase tracking-widest text-xs text-zinc-900 mb-6">Support</h4>
+            <ul className="space-y-4 text-sm text-zinc-500">
+              <li><a href="#" className="hover:text-black">Track Order</a></li>
+              <li><a href="#" className="hover:text-black">Start Return</a></li>
+              <li><a href="#" className="hover:text-black">Size Guide</a></li>
+              <li><a href="#" className="hover:text-black">Contact Us</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto border-t border-zinc-200 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-zinc-500">
+          <p>© 2025 Swago Inc. All rights reserved.</p>
+          <div className="flex gap-6 mt-4 md:mt-0">
+            <a href="#" className="hover:text-black">Privacy</a>
+            <a href="#" className="hover:text-black">Terms</a>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+};
+
+export default SwagoLearn;
